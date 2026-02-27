@@ -2462,6 +2462,8 @@ body.loading-complete .app-shell {
   display: block;
   transition: transform 0.18s cubic-bezier(.22, .61, .36, 1), filter 0.18s cubic-bezier(.22, .61, .36, 1);
   filter: drop-shadow(0 4px 24px rgba(0, 0, 0, 0.45));
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 #start-playing-btn img {
@@ -2470,6 +2472,7 @@ body.loading-complete .app-shell {
   display: block;
   pointer-events: none;
   user-select: none;
+  border-radius: 50%;
 }
 
 #start-playing-btn:hover {
