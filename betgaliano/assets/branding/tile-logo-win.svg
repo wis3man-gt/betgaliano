@@ -1,0 +1,22 @@
+<svg width="178" height="161" viewBox="0 0 178 161" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_dg_24_34)">
+<path d="M59.7002 4.5C64.5838 4.5 68.9359 7.54898 70.5566 12.0947V12.0957L83.8262 49.0938L83.8301 49.1035L84.2617 50.2373V68.5566H69.7607L70 69.2246L88.1328 119.882L88.6035 121.195L89.0742 119.882L107.236 69.2607L107.477 68.5918H93.0029V50.2285L93.3838 49.1152L93.3828 49.1143L106.65 12.124H106.651C108.236 7.70485 112.357 4.70539 117.046 4.50977L117.502 4.5H154.233L135.012 10.9043L134.669 11.0176V11.3506L124.043 40.9785V40.9795L121.25 48.7852L121.011 49.4541H167.115L143.624 57.333L143.395 57.4102L143.312 57.6377L134.699 81.5615C133.495 84.9015 130.812 87.4982 127.415 88.6055L121.16 90.6299L120.927 90.7051L120.844 90.9365L107.338 128.512V128.513C105.71 133.073 101.365 136.115 96.4893 136.108H95.7305L95.6113 136.438L91.0166 149.125H86.2217L81.7119 136.44L81.5938 136.108H80.7764C76.0725 136.108 71.8148 133.239 70.0801 128.934L69.9199 128.513L56.4785 90.9658L56.3965 90.7344L56.1631 90.6582L49.8496 88.6055C46.4536 87.4983 43.7711 84.9027 42.5664 81.5635L34.0107 57.6387L33.9287 57.4102L33.6982 57.333L10.0674 49.4248H56.2852L56.043 48.7549L53.2139 40.9414L42.5381 11.1807L42.4551 10.9521L42.2246 10.875L23.0137 4.5H59.7002Z" fill="#A2FF16" stroke="#0C4004"/>
+</g>
+<defs>
+<filter id="filter0_dg_24_34" x="0" y="0" width="177.265" height="160.625" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="3.5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.519187 0 0 0 0 1 0 0 0 0 0.467671 0 0 0 1 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_24_34"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_24_34" result="shape"/>
+<feTurbulence type="fractalNoise" baseFrequency="0.019999999552965164 0.019999999552965164" numOctaves="3" seed="7098" />
+<feDisplacementMap in="shape" scale="8" xChannelSelector="R" yChannelSelector="G" result="displacedImage" width="100%" height="100%" />
+<feMerge result="effect2_texture_24_34">
+<feMergeNode in="displacedImage"/>
+</feMerge>
+</filter>
+</defs>
+</svg>

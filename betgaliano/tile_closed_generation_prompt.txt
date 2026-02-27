@@ -1,0 +1,40 @@
+DEFAULT/CLOSED MINES TILE — FINAL GENERATION PROMPT
+
+Create a single square stone tile asset for a Mines game UI.
+
+Composition:
+- One tile only, centered in frame
+- Strict top-down orthographic view (90-degree overhead)
+- No perspective tilt, no isometric angle
+- Symmetrical, grid-friendly silhouette
+- Consistent edge thickness on all 4 sides
+
+Style:
+- Stylized 3D polished game-art look
+- Dark bluish stone material
+- Rounded corners
+- Soft, controlled lighting
+- Clean, readable cracks and rock detail (avoid heavy noise)
+- Keep center region visually cleaner/less detailed for later SVG/logo overlay
+- No emblem/logo in center
+
+Negative constraints:
+- No hover glow
+- No red danger glow
+- No particles, props, environment, scene, shadows on floor, UI frame, text, watermark
+- No multiple tiles
+
+Output requirements:
+- PNG style output
+- Plain solid white background (#FFFFFF) for easy background removal
+- Tile should remain readable when downscaled to small UI sizes (e.g., 64–96 px)
+
+Recommended generation settings (if tool supports):
+- Aspect ratio: 1:1
+- Camera: orthographic / top view / overhead 90°
+- Stylization: medium (retain clean forms)
+- Detail: medium-high on edges, medium-low in center
+- Contrast: medium
+
+Optional one-line short prompt:
+"Single centered square dark-blue stone game tile, strict top-down 90° orthographic view, rounded corners, stylized polished 3D game art, clean readable cracks, clean center area for icon overlay, symmetrical edges, no glow, no logo, no text, plain white background, PNG-ready."

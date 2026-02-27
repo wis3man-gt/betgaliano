@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Casino Snakes Prototype</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="theme-minimal">
+  <div id="loading-screen">
+    <div id="door-left" class="door-panel"></div>
+    <button id="start-playing-btn" aria-label="Start Playing">
+      <img id="start-playing-img" src="assets/ui/start-playing-default.png" alt="Start Playing" />
+    </button>
+    <div id="door-right" class="door-panel"></div>
+  </div>
+
+  <video id="backgroundVideo" class="background-video" muted playsinline preload="auto" aria-hidden="true">
+    <source src="assets/ui/background-animation.mp4" type="video/mp4" />
+  </video>
+
+  <div class="app-shell">
+    <main class="layout">
+      <aside class="panel left-hud">
+        <section class="card hud-brand">
+          <div class="topbar-right">
+            <div class="pill stat-card stat-card--balance">
+              <span class="stat-card-label">Balance</span>
+              <span class="stat-card-value" id="balance">1000.00</span>
+            </div>
+            <div class="pill stat-card stat-card--mines">
+              <span class="stat-card-label">Snakes</span>
+              <span class="stat-card-value" id="mineCounter">3</span>
+            </div>
+            <div class="pill stat-card stat-card--status">
+              <span class="stat-card-label">Status</span>
+              <span class="stat-card-value" id="status">Ready</span>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="panel center-panel">
+
+        <div class="board-logo-overlay" aria-hidden="true">
+          <div class="board-logo-sweep">
+            <img class="board-logo-image" src="assets/branding/logo.png" alt="" />
+          </div>
+        </div>
+
+        <div class="card board-card">
+          <div id="grid" class="grid"></div>
+        </div>
+
+        <div class="action-buttons">
+          <button id="startBtn" class="action-btn action-btn--start" aria-label="Start Game">
+            <img class="action-btn-img action-btn-img--default" src="assets/ui/buttons/start-default.png" alt=""
+              aria-hidden="true" />
+            <img class="action-btn-img action-btn-img--hover" src="assets/ui/buttons/start-hover.png" alt=""
+              aria-hidden="true" />
+            <img class="action-btn-img action-btn-img--active" src="assets/ui/buttons/start-pressed.png" alt=""
+              aria-hidden="true" />
+            <img class="action-btn-img action-btn-img--disabled" src="assets/ui/buttons/start-disabled.png" alt=""
+              aria-hidden="true" />
+            <span class="sr-only">Start Game</span>
+          </button>
+
+          <button id="cashoutBtn" class="action-btn action-btn--cashout" aria-label="Cash Out" disabled>
+            <img class="action-btn-img action-btn-img--default" src="assets/ui/buttons/cashout-default.png" alt=""
+              aria-hidden="true" />
+            <img class="action-btn-img action-btn-img--hover" src="assets/ui/buttons/cashout-hover.png" alt=""
+              aria-hidden="true" />
+            <img class="action-btn-img action-btn-img--active" src="assets/ui/buttons/cashout-pressed.png" alt=""
+              aria-hidden="true" />
+            <img class="action-btn-img action-btn-img--disabled" src="assets/ui/buttons/cashout-disabled.png" alt=""
+              aria-hidden="true" />
+            <span class="sr-only">Cash Out</span>
+          </button>
+        </div>
+
+      </section>
+
+      <aside class="panel right-panel">
+        <section class="controls-panel">
+
+          <div class="controls-grid">
+            <div class="control-field">
+              <span>Snakes Count</span>
+              <div class="betbar betbar--mines" id="minesBar" aria-label="Snakes Count">
+                <button type="button" id="minesPlusBtn" class="icon-btn icon-btn--plus"
+                  aria-label="Increase snakes count">
+                  <img class="icon-btn-img" id="minesPlusImg" src="assets/ui/plus-default.png"
+                    data-default-src="assets/ui/plus-default.png" data-hover-src="assets/ui/plus-hover.png"
+                    data-pressed-src="assets/ui/plus-pressed.png" data-disabled-src="assets/ui/plus-disabled.png" alt=""
+                    aria-hidden="true" />
+                </button>
+                <div class="betbar-value" id="minesValueText">3</div>
+                <button type="button" id="minesMinusBtn" class="icon-btn icon-btn--minus"
+                  aria-label="Decrease snakes count">
+                  <img class="icon-btn-img" id="minesMinusImg" src="assets/ui/minus-default.png"
+                    data-default-src="assets/ui/minus-default.png" data-hover-src="assets/ui/minus-hover.png"
+                    data-pressed-src="assets/ui/minus-pressed.png" data-disabled-src="assets/ui/minus-disabled.png"
+                    alt="" aria-hidden="true" />
+                </button>
+              </div>
+              <input type="number" id="minesInput" min="1" max="24" step="1" value="3" class="control-hidden-input"
+                tabindex="-1" aria-hidden="true" />
+            </div>
+
+            <div class="control-field">
+              <span>Bet Amount</span>
+              <div class="betbar betbar--bet" id="betBar" aria-label="Bet Amount">
+                <button type="button" id="betPlusBtn" class="icon-btn icon-btn--plus" aria-label="Increase bet amount">
+                  <img class="icon-btn-img" id="betPlusImg" src="assets/ui/plus-default.png"
+                    data-default-src="assets/ui/plus-default.png" data-hover-src="assets/ui/plus-hover.png"
+                    data-pressed-src="assets/ui/plus-pressed.png" data-disabled-src="assets/ui/plus-disabled.png" alt=""
+                    aria-hidden="true" />
+                </button>
+                <div class="betbar-value" id="betValueText">$10</div>
+                <button type="button" id="betMinusBtn" class="icon-btn icon-btn--minus"
+                  aria-label="Decrease bet amount">
+                  <img class="icon-btn-img" id="betMinusImg" src="assets/ui/minus-default.png"
+                    data-default-src="assets/ui/minus-default.png" data-hover-src="assets/ui/minus-hover.png"
+                    data-pressed-src="assets/ui/minus-pressed.png" data-disabled-src="assets/ui/minus-disabled.png"
+                    alt="" aria-hidden="true" />
+                </button>
+              </div>
+              <input type="number" id="betInput" min="1" step="1" value="10" class="control-hidden-input" tabindex="-1"
+                aria-hidden="true" />
+            </div>
+          </div>
+
+          <div class="quick-bet-row">
+            <button type="button" class="quick-bet-btn quick-icon-btn" id="halfBetBtn" aria-label="Half Bet">
+              <img class="quick-icon" src="assets/quick/half_default.png"
+                data-default-src="assets/quick/half_default.png" data-hover-src="assets/quick/half_hover.png"
+                data-pressed-src="assets/quick/half_pressed.png" data-disabled-src="assets/quick/half_disabled.png"
+                alt="" aria-hidden="true" />
+              <span class="sr-only">Half</span>
+            </button>
+            <button type="button" class="quick-bet-btn quick-icon-btn" id="doubleBetBtn" aria-label="Double Bet">
+              <img class="quick-icon" src="assets/quick/double_default.png"
+                data-default-src="assets/quick/double_default.png" data-hover-src="assets/quick/double_hover.png"
+                data-pressed-src="assets/quick/double_pressed.png" data-disabled-src="assets/quick/double_disabled.png"
+                alt="" aria-hidden="true" />
+              <span class="sr-only">Double</span>
+            </button>
+            <button type="button" class="quick-bet-btn quick-icon-btn" id="clearBetBtn" aria-label="Clear Bet">
+              <img class="quick-icon" src="assets/quick/clear_default.png"
+                data-default-src="assets/quick/clear_default.png" data-hover-src="assets/quick/clear_hover.png"
+                data-pressed-src="assets/quick/clear_pressed.png" data-disabled-src="assets/quick/clear_disabled.png"
+                alt="" aria-hidden="true" />
+              <span class="sr-only">Clear</span>
+            </button>
+          </div>
+
+          <section class="round-stats-inline bottom-stats-row" aria-label="Round Stats">
+            <div class="round-stat-item">
+              <div class="round-stat-label">Multiplier</div>
+              <div class="round-stat-value" id="multiplier">1.00x</div>
+            </div>
+            <div class="round-stat-item">
+              <div class="round-stat-label">Potential Profit</div>
+              <div class="round-stat-value" id="profit">0.00</div>
+            </div>
+            <div class="round-stat-item">
+              <div class="round-stat-label">Safe Picks</div>
+              <div class="round-stat-value" id="safePicks">0</div>
+            </div>
+          </section>
+        </section>
+      </aside>
+    </main>
+
+    <div class="footer-rail" aria-hidden="true">
+      <div class="rail-carts"></div>
+    </div>
+  </div>
+
+  <audio id="bgMusic" loop preload="auto">
+    <source src="assets/audio/bg-music.mp3" type="audio/mpeg">
+  </audio>
+
+  <button id="muteBtn" class="mute-btn" aria-label="Toggle sound">
+    <img id="muteBtnImg" src="assets/ui/sound-on-default.png" alt="Sound on" />
+  </button>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
