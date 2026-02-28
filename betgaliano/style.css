@@ -244,7 +244,8 @@ body {
   opacity: 1;
 }
 
-.app-shell.hint-overlay-active #startBtn {
+.app-shell.hint-overlay-active #startBtn,
+.app-shell.hint-overlay-active .stat-card--balance.hint-pop {
   position: relative;
   z-index: 60;
 }
@@ -2277,6 +2278,56 @@ body {
 }
 
 @keyframes arrow-hint-right {
+  0% {
+    opacity: 0;
+    transform: translateX(10px) rotate(-90deg);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translateX(0px) rotate(-90deg);
+  }
+
+  40% {
+    transform: translateX(-8px) rotate(-90deg);
+  }
+
+  60% {
+    transform: translateX(0px) rotate(-90deg);
+  }
+
+  80% {
+    transform: translateX(-4px) rotate(-90deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(0px) rotate(-90deg);
+    opacity: 0;
+  }
+}
+
+.low-balance {
+  color: var(--color-danger) !important;
+  font-weight: 800 !important;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% {
+    text-shadow: 0 0 0 rgba(216, 79, 79, 0);
+  }
+
+  50% {
+    text-shadow: 0 0 8px rgba(216, 79, 79, 0.6);
+  }
+
+  100% {
+    text-shadow: 0 0 0 rgba(216, 79, 79, 0);
+  }
+}
+
+@keyframes arrow-hint-right-balance {
   0% {
     opacity: 0;
     transform: translateX(10px) rotate(-90deg);

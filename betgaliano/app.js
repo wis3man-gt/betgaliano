@@ -628,11 +628,6 @@ function updateUI() {
 
   gridEl.classList.toggle("tile-idle-tint", !state.active);
 
-  balanceEl.textContent = `$${state.balance.toFixed(2)}`;
-  multiplierEl.textContent = `${state.multiplier.toFixed(2)}x`;
-  profitEl.textContent = state.currentProfit.toFixed(2);
-  safePicksEl.textContent = String(state.safePicks);
-
   const minesPreview = Number(minesInput.value);
   const minesDisplay = state.active
     ? state.minesCount
@@ -640,6 +635,23 @@ function updateUI() {
       ? minesPreview
       : state.minesCount;
   mineCounterEl.textContent = String(minesDisplay);
+
+  multiplierEl.textContent = `${state.multiplier.toFixed(2)}x`;
+  profitEl.textContent = state.currentProfit.toFixed(2);
+  safePicksEl.textContent = String(state.safePicks);
+
+  const currentBet = Number(betInput.value);
+  if (state.balance < currentBet) {
+    balanceEl.textContent = "Low Balance!";
+    balanceEl.classList.add("low-balance");
+    setStatus("Not enaugh balance");
+  } else {
+    balanceEl.textContent = `$${state.balance.toFixed(2)}`;
+    balanceEl.classList.remove("low-balance");
+    if (statusEl.textContent === "Not enaugh balance") {
+      setStatus("Ready");
+    }
+  }
 
   startBtn.disabled = state.active;
   // animate Cash Out briefly when it becomes enabled
@@ -654,6 +666,44 @@ function updateUI() {
 
 function setStatus(message) {
   statusEl.textContent = message;
+}
+
+function showBalanceHint() {
+  const existingArrow = document.querySelector(".balance-hint-arrow");
+  if (existingArrow) return;
+
+  const statCard = balanceEl.closest(".stat-card--balance");
+  if (!statCard) return;
+
+  // Dim background + pop the balance card
+  appShellEl?.classList.add("hint-overlay-active");
+  statCard.classList.add("hint-pop");
+
+  const rect = statCard.getBoundingClientRect();
+  const arrow = document.createElement("img");
+  arrow.src = "assets/ui/hint-arrow.png";
+  arrow.className = "hint-arrow balance-hint-arrow";
+  const arrowSize = 140;
+
+  arrow.style.cssText = `
+    position: fixed;
+    width: ${arrowSize}px;
+    height: auto;
+    left: ${rect.right + 25}px;
+    top: ${rect.top + rect.height / 2 - (arrowSize * 0.4)}px;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0;
+    transform: rotate(-90deg);
+  `;
+  document.body.appendChild(arrow);
+  arrow.style.animation = "arrow-hint-right-balance 1.2s ease forwards";
+
+  setTimeout(() => {
+    arrow.remove();
+    appShellEl?.classList.remove("hint-overlay-active");
+    statCard.classList.remove("hint-pop");
+  }, 1200);
 }
 
 function resetVisualBoard() {
@@ -699,7 +749,12 @@ function startGame() {
   if (state.active) return;
 
   const values = validateInputs();
-  if (!values) return;
+  if (!values) {
+    if (state.balance < Number(betInput.value)) {
+      showBalanceHint();
+    }
+    return;
+  }
 
   state.bet = values.bet;
   state.minesCount = values.minesCount;
