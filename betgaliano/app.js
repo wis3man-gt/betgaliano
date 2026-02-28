@@ -706,6 +706,41 @@ function showBalanceHint() {
   }, 1200);
 }
 
+function showBetHint() {
+  const existingArrow = document.querySelector(".bet-hint-arrow");
+  if (existingArrow) return;
+
+  const betBar = document.getElementById("betBar");
+  if (!betBar) return;
+
+  const rect = betBar.getBoundingClientRect();
+  const arrow = document.createElement("img");
+  arrow.src = "assets/ui/hint-arrow.png";
+  arrow.className = "hint-arrow bet-hint-arrow";
+  const arrowSize = 140;
+
+  arrow.style.cssText = `
+    position: fixed;
+    width: ${arrowSize}px;
+    height: auto;
+    left: ${rect.left - arrowSize - 25}px;
+    top: ${rect.top + rect.height / 2 - (arrowSize * 0.4)}px;
+    pointer-events: none;
+    z-index: 1001;
+    opacity: 0;
+    transform: rotate(90deg);
+  `;
+  document.body.appendChild(arrow);
+  arrow.style.animation = "arrow-hint-left-bet 1.2s ease forwards";
+
+  betBar.classList.add("hint-pop");
+
+  setTimeout(() => {
+    arrow.remove();
+    betBar.classList.remove("hint-pop");
+  }, 1200);
+}
+
 function resetVisualBoard() {
   clearStartShimmerSequence();
   clearRandomTileShimmerSequence();
@@ -752,6 +787,7 @@ function startGame() {
   if (!values) {
     if (state.balance < Number(betInput.value)) {
       showBalanceHint();
+      showBetHint();
     }
     return;
   }
