@@ -1,4 +1,4 @@
-window.addEventListener('load', () => {
+document.addEventListener('DOMContentLoaded', () => {
   const screen = document.getElementById('loading-screen');
   const btn = document.getElementById('start-playing-btn');
   const img = document.getElementById('start-playing-img');
@@ -9,25 +9,11 @@ window.addEventListener('load', () => {
     pressed: 'assets/ui/start-playing-pressed.png',
   };
 
-  // Preload all three states
-  [IMGS.hover, IMGS.pressed].forEach(src => { const i = new Image(); i.src = src; });
-
-  function openDoors() {
-    img.src = IMGS.pressed;
-
-    // Small visual pause on pressed, then open
-    setTimeout(() => {
-      screen.classList.add('open');
-
-      setTimeout(() => {
-        document.body.classList.add('loading-complete');
-      }, 1200);
-
-      setTimeout(() => {
-        screen.classList.add('hidden');
-      }, 1600);
-    }, 120);
-  }
+  // Preload only these three images for the loading screen
+  [IMGS.default, IMGS.hover, IMGS.pressed].forEach(src => {
+    const i = new Image();
+    i.src = src;
+  });
 
   btn.addEventListener('mouseenter', () => {
     if (screen.classList.contains('open')) return;
@@ -62,7 +48,46 @@ window.addEventListener('load', () => {
     if (screen.classList.contains('open')) return;
     openDoors();
   }, { passive: false });
+
+  function openDoors() {
+    img.src = IMGS.pressed;
+
+    // Start loading heavy stuff the moment user clicks
+    loadHeavyAssets();
+
+    // Small visual pause on pressed, then open
+    setTimeout(() => {
+      screen.classList.add('open');
+
+      setTimeout(() => {
+        document.body.classList.add('loading-complete');
+      }, 1200);
+
+      setTimeout(() => {
+        screen.classList.add('hidden');
+      }, 1600);
+    }, 120);
+  }
 });
+
+function loadHeavyAssets() {
+  // 1. Load and play background video
+  if (backgroundVideoEl) {
+    backgroundVideoEl.preload = "auto";
+    backgroundVideoEl.load();
+    backgroundVideoEl.play().catch(() => { });
+  }
+
+  // 2. Load background music
+  const bgMusic = document.getElementById('bgMusic');
+  if (bgMusic) {
+    bgMusic.preload = "auto";
+    bgMusic.load();
+  }
+
+  // 3. Initialize other sounds
+  initSounds();
+}
 
 
 const state = {
@@ -113,47 +138,41 @@ const MINES_MIN = 1;
 const MINES_MAX = 24;
 const MINES_STEP = 1;
 
-function playClick() {
-  const s = new Audio("assets/audio/btn-click.mp3");
-  s.volume = 0.6;
-  s.play().catch(() => { });
+const sounds = {};
+
+function initSounds() {
+  const assets = {
+    click: "assets/audio/btn-click.mp3",
+    gameStart: "assets/audio/game-start.mp3",
+    cashOut: "assets/audio/cash-out.mp3",
+    flip: "assets/audio/flip-tile.mp3",
+    reveal: "assets/audio/snake-reveal.mp3",
+    hiss: "assets/audio/snake-hiss.mp3",
+    mute: "assets/audio/mute.mp3"
+  };
+
+  for (const [key, src] of Object.entries(assets)) {
+    sounds[key] = new Audio(src);
+    sounds[key].volume = 0.6;
+    if (key === 'mute') sounds[key].volume = 0.7;
+  }
 }
 
-function playGameStart() {
-  const s = new Audio("assets/audio/game-start.mp3");
-  s.volume = 0.6;
-  s.play().catch(() => { });
+function playSound(key) {
+  const s = sounds[key];
+  if (s) {
+    s.currentTime = 0;
+    s.play().catch(() => { });
+  }
 }
 
-function playCashOut() {
-  const s = new Audio("assets/audio/cash-out.mp3");
-  s.volume = 0.6;
-  s.play().catch(() => { });
-}
-
-function playTileFlip() {
-  const s = new Audio("assets/audio/flip-tile.mp3");
-  s.volume = 0.6;
-  s.play().catch(() => { });
-}
-
-function playSnakeReveal() {
-  const s = new Audio("assets/audio/snake-reveal.mp3");
-  s.volume = 0.6;
-  s.play().catch(() => { });
-}
-
-function playSnakeHiss() {
-  const s = new Audio("assets/audio/snake-hiss.mp3");
-  s.volume = 0.6;
-  s.play().catch(() => { });
-}
-
-function playMuteToggle() {
-  const s = new Audio("assets/audio/mute.mp3");
-  s.volume = 0.7;
-  s.play().catch(() => { });
-}
+function playClick() { playSound('click'); }
+function playGameStart() { playSound('gameStart'); }
+function playCashOut() { playSound('cashOut'); }
+function playTileFlip() { playSound('flip'); }
+function playSnakeReveal() { playSound('reveal'); }
+function playSnakeHiss() { playSound('hiss'); }
+function playMuteToggle() { playSound('mute'); }
 
 function clampInteger(value, min, max = Number.POSITIVE_INFINITY) {
   const parsed = Number(value);
@@ -354,17 +373,20 @@ function bindAcceleratedValueButton(button, onStep, onPressSound = playClick) {
 
 function initBackgroundVideo() {
   if (!backgroundVideoEl) return;
+
+  // If video is not already preloaded/playing, we wait for it.
   const startPlayback = () => {
     backgroundVideoEl.loop = true;
     backgroundVideoEl.playbackRate = 1;
     backgroundVideoEl.currentTime = 0;
-    backgroundVideoEl.play().catch(() => {
-      // Autoplay can be blocked by browser policy.
-    });
+    backgroundVideoEl.play().catch(() => { });
   };
 
-  if (backgroundVideoEl.readyState >= 1) startPlayback();
-  else backgroundVideoEl.addEventListener("loadedmetadata", startPlayback, { once: true });
+  if (backgroundVideoEl.readyState >= 1) {
+    startPlayback();
+  } else {
+    backgroundVideoEl.addEventListener("loadedmetadata", startPlayback, { once: true });
+  }
 }
 
 function clearStartShimmerSequence() {
