@@ -835,7 +835,11 @@ function startGame() {
 
   // Reset visuals
   resetVisualBoard();
+  AnimationManager.resetMultiplierStyle();
   runStartShimmerSequence();
+
+  // Dismiss any lingering overlays
+  document.getElementById('vignetteOverlay')?.classList.remove('active');
 
   setStatus("Round started. Pick a tile.");
   updateUI();
@@ -917,14 +921,35 @@ function onTileClick(index) {
     playSnakeReveal();
 
     // Lose round
-    tile.classList.add("mine");
     gridEl.classList.remove("round-win");
     gridEl.classList.add("round-lose");
     setTileContent(tile, "");
-    revealAllMines();
     state.active = false;
     clearStartShimmerSequence();
-    // record recent loss (store round snapshot)
+
+    // Collect all hidden mine cells for stagger reveal
+    const hiddenMineCells = [];
+    for (let j = 0; j < GRID_SIZE; j++) {
+      if (j === index) continue;
+      const c = state.board[j];
+      const t = getTileEl(j);
+      if (c && c.isMine && !c.revealed) {
+        hiddenMineCells.push(t);
+      }
+    }
+
+    // Disable all tiles immediately
+    for (let j = 0; j < GRID_SIZE; j++) {
+      getTileEl(j).disabled = true;
+    }
+
+    // Animate: flip clicked cell, shake, stagger-reveal remaining mines, vignette
+    AnimationManager.revealSnake(tile, hiddenMineCells).then(() => {
+      // Show loss overlay after all animations complete
+      AnimationManager.showLossOverlay(state.bet);
+    });
+
+    // record recent loss
     addRecentResult({
       type: "lose",
       bet: state.bet,
@@ -935,9 +960,7 @@ function onTileClick(index) {
       lostAmount: state.bet,
       timestamp: Date.now(),
     });
-    // brief shake feedback on mine hit
-    gridEl.classList.add("shake");
-    setTimeout(() => gridEl.classList.remove("shake"), 420);
+
     setStatus("Boom! You hit a snake.");
     updateUI();
     return;
@@ -945,12 +968,17 @@ function onTileClick(index) {
 
   // Safe pick
   state.safePicks += 1;
-  tile.classList.add("safe");
-  setTileContent(tile, "");
 
+  const oldMult = state.multiplier;
   updateMultiplier();
   state.currentProfit = state.bet * state.multiplier;
 
+  // Animate the tile reveal (flip + particles + glow)
+  AnimationManager.revealSafe(tile);
+  // Animate multiplier count-up with color
+  AnimationManager.updateMultiplier(oldMult, state.multiplier);
+
+  setTileContent(tile, "");
   setStatus(`Safe pick! Multiplier: ${state.multiplier.toFixed(2)}x`);
   updateUI();
 }
@@ -1239,6 +1267,237 @@ function cashOut() {
   // brief flash on multiplier after successful cashout
   multiplierEl.classList.add("flash");
   setTimeout(() => multiplierEl.classList.remove("flash"), 420);
+
+  // Show win overlay with confetti
+  AnimationManager.showWinOverlay(winAmount, state.multiplier);
 }
+
+// ════════════════════════════════════════════════════════════
+// ANIMATION MANAGER
+// ════════════════════════════════════════════════════════════
+const AnimationManager = (() => {
+  const prefersReducedMotion = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── Helpers ──
+  function createParticles(cell) {
+    const container = document.createElement('div');
+    container.className = 'particle-container';
+    for (let i = 0; i < 6; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      container.appendChild(p);
+    }
+    cell.appendChild(container);
+    setTimeout(() => container.remove(), 500);
+  }
+
+  function createConfetti(count, cssClass, containerClass) {
+    const container = document.createElement('div');
+    container.className = containerClass;
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('div');
+      piece.className = cssClass;
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.animationDelay = `${Math.random() * 0.8}s`;
+      piece.style.animationDuration = `${2 + Math.random() * 1.5}s`;
+      piece.style.setProperty('--confetti-rot', `${360 + Math.random() * 720}deg`);
+      piece.style.setProperty('--drift-x', `${(Math.random() - 0.5) * 60}px`);
+      container.appendChild(piece);
+    }
+    document.body.appendChild(container);
+    const maxDuration = cssClass === 'red-drift-piece' ? 5000 : 4000;
+    setTimeout(() => container.remove(), maxDuration);
+  }
+
+  // ── Core flip animation ──
+  function flipTile(cellElement, onMidpoint) {
+    return new Promise((resolve) => {
+      if (prefersReducedMotion()) {
+        if (onMidpoint) onMidpoint();
+        resolve();
+        return;
+      }
+
+      // Create flip container inside the tile
+      const flipContainer = document.createElement('div');
+      flipContainer.className = 'tile-flip-container';
+      const flipInner = document.createElement('div');
+      flipInner.className = 'tile-flip-inner';
+      flipContainer.appendChild(flipInner);
+      cellElement.appendChild(flipContainer);
+
+      const flipDuration = parseFloat(getComputedStyle(document.documentElement)
+        .getPropertyValue('--anim-flip')) || 120;
+
+      // Phase 1: flip out
+      flipInner.classList.add('flipping-out');
+
+      setTimeout(() => {
+        // Midpoint: swap content
+        if (onMidpoint) onMidpoint();
+
+        // Phase 2: flip in
+        flipInner.classList.remove('flipping-out');
+        flipInner.classList.add('flipping-in');
+
+        setTimeout(() => {
+          flipContainer.remove();
+          resolve();
+        }, flipDuration);
+      }, flipDuration);
+    });
+  }
+
+  // ── Public: revealSafe(cellElement) ──
+  async function revealSafe(cellElement) {
+    await flipTile(cellElement, () => {
+      // Apply safe visual at midpoint of flip
+      cellElement.classList.add('revealed', 'picked', 'safe');
+    });
+
+    // Gem pulse
+    const logo = cellElement.querySelector('.tile-content');
+    if (logo) {
+      logo.classList.add('tile-icon-pulse');
+      setTimeout(() => logo.classList.remove('tile-icon-pulse'), 250);
+    }
+
+    // Particle burst
+    if (!prefersReducedMotion()) {
+      createParticles(cellElement);
+    }
+
+    // Green glow
+    cellElement.classList.add('anim-safe-glow');
+  }
+
+  // ── Public: revealSnake(cellElement, allHiddenCells) ──
+  async function revealSnake(cellElement, allHiddenCells) {
+    // Flip the clicked mine
+    await flipTile(cellElement, () => {
+      cellElement.classList.add('revealed', 'picked', 'mine');
+    });
+
+    // Screen shake on the grid container
+    if (!prefersReducedMotion()) {
+      const gridContainer = document.getElementById('grid');
+      gridContainer.classList.add('anim-screen-shake');
+      setTimeout(() => gridContainer.classList.remove('anim-screen-shake'),
+        parseFloat(getComputedStyle(document.documentElement)
+          .getPropertyValue('--anim-shake')) || 400);
+    }
+
+    // Delay 300ms then reveal all remaining hidden cells with stagger
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        const staggerDelay = 50;
+        allHiddenCells.forEach((cell, index) => {
+          setTimeout(() => {
+            if (prefersReducedMotion()) {
+              cell.classList.add('revealed', 'mine');
+            } else {
+              cell.classList.add('revealed', 'mine', 'anim-stagger-reveal');
+            }
+            cell.disabled = true;
+          }, index * staggerDelay);
+        });
+
+        const totalStagger = allHiddenCells.length * staggerDelay + 240;
+        setTimeout(resolve, totalStagger);
+      }, 300);
+    });
+
+    // Red vignette
+    const vignette = document.getElementById('vignetteOverlay');
+    if (vignette) {
+      vignette.classList.add('active');
+      setTimeout(() => vignette.classList.remove('active'), 2000);
+    }
+  }
+
+  // ── Public: showWinOverlay(amount, multiplier) ──
+  function showWinOverlay(amount, multiplier) {
+    // Confetti only — no overlay modal
+    if (!prefersReducedMotion()) {
+      createConfetti(40, 'confetti-piece', 'confetti-container');
+    }
+  }
+
+  // ── Public: showLossOverlay(amount) ──
+  function showLossOverlay(amount) {
+    // Red particle drift only — no overlay modal
+    if (!prefersReducedMotion()) {
+      createConfetti(15, 'red-drift-piece', 'red-drift-container');
+    }
+  }
+
+  // ── Public: updateMultiplier(oldValue, newValue) ──
+  function updateMultiplierDisplay(oldValue, newValue) {
+    const el = document.getElementById('multiplier');
+    if (!el) return;
+
+    // Remove old color classes
+    el.classList.remove('multiplier-green', 'multiplier-yellow', 'multiplier-orange', 'multiplier-red');
+
+    // Set color based on new value
+    if (newValue >= 10) {
+      el.classList.add('multiplier-red');
+    } else if (newValue >= 5) {
+      el.classList.add('multiplier-orange');
+    } else if (newValue >= 2) {
+      el.classList.add('multiplier-yellow');
+    } else {
+      el.classList.add('multiplier-green');
+    }
+
+    // Count-up animation using rAF
+    if (prefersReducedMotion() || oldValue === newValue) {
+      el.textContent = `${newValue.toFixed(2)}x`;
+      return;
+    }
+
+    const duration = 300;
+    const startTime = performance.now();
+
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = oldValue + (newValue - oldValue) * eased;
+      el.textContent = `${current.toFixed(2)}x`;
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.textContent = `${newValue.toFixed(2)}x`;
+        // Guard optional SFX integration to avoid runtime crashes when absent.
+        if (typeof globalThis.SFX !== "undefined" && typeof globalThis.SFX.multiplierTick === "function") {
+          globalThis.SFX.multiplierTick();
+        }
+      }
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  // ── Public: resetMultiplierStyle() ──
+  function resetMultiplierStyle() {
+    const el = document.getElementById('multiplier');
+    if (!el) return;
+    el.classList.remove('multiplier-green', 'multiplier-yellow', 'multiplier-orange', 'multiplier-red');
+  }
+
+  return {
+    revealSafe,
+    revealSnake,
+    showWinOverlay,
+    showLossOverlay,
+    updateMultiplier: updateMultiplierDisplay,
+    resetMultiplierStyle,
+  };
+})();
+
 
 init();
