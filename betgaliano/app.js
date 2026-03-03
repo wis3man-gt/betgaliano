@@ -1,53 +1,61 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const screen = document.getElementById('loading-screen');
-  const btn = document.getElementById('start-playing-btn');
-  const img = document.getElementById('start-playing-img');
+document.addEventListener("DOMContentLoaded", () => {
+  const screen = document.getElementById("loading-screen");
+  const btn = document.getElementById("start-playing-btn");
+  const img = document.getElementById("start-playing-img");
 
   const IMGS = {
-    default: 'assets/ui/start-playing-default.png',
-    hover: 'assets/ui/start-playing-hover.png',
-    pressed: 'assets/ui/start-playing-pressed.png',
+    default: "assets/ui/start-playing-default.png",
+    hover: "assets/ui/start-playing-hover.png",
+    pressed: "assets/ui/start-playing-pressed.png",
   };
 
   // Preload only these three images for the loading screen
-  [IMGS.default, IMGS.hover, IMGS.pressed].forEach(src => {
+  [IMGS.default, IMGS.hover, IMGS.pressed].forEach((src) => {
     const i = new Image();
     i.src = src;
   });
 
-  btn.addEventListener('mouseenter', () => {
-    if (screen.classList.contains('open')) return;
+  btn.addEventListener("mouseenter", () => {
+    if (screen.classList.contains("open")) return;
     img.src = IMGS.hover;
   });
-  btn.addEventListener('mouseleave', () => {
-    if (screen.classList.contains('open')) return;
+  btn.addEventListener("mouseleave", () => {
+    if (screen.classList.contains("open")) return;
     img.src = IMGS.default;
   });
-  btn.addEventListener('mousedown', () => {
-    if (screen.classList.contains('open')) return;
+  btn.addEventListener("mousedown", () => {
+    if (screen.classList.contains("open")) return;
     img.src = IMGS.pressed;
   });
-  btn.addEventListener('mouseup', () => {
-    if (screen.classList.contains('open')) return;
+  btn.addEventListener("mouseup", () => {
+    if (screen.classList.contains("open")) return;
     img.src = IMGS.hover;
   });
 
-  btn.addEventListener('click', () => {
-    if (screen.classList.contains('open')) return;
+  btn.addEventListener("click", () => {
+    if (screen.classList.contains("open")) return;
     openDoors();
   });
 
   // Touch support
-  btn.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    if (screen.classList.contains('open')) return;
-    img.src = IMGS.pressed;
-  }, { passive: false });
-  btn.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    if (screen.classList.contains('open')) return;
-    openDoors();
-  }, { passive: false });
+  btn.addEventListener(
+    "touchstart",
+    (e) => {
+      e.preventDefault();
+      if (screen.classList.contains("open")) return;
+      img.src = IMGS.pressed;
+    },
+    { passive: false },
+  );
+  btn.addEventListener(
+    "touchend",
+    (e) => {
+      e.preventDefault();
+      if (screen.classList.contains("open")) return;
+      openDoors();
+    },
+    { passive: false },
+  );
 
   function openDoors() {
     img.src = IMGS.pressed;
@@ -57,14 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Small visual pause on pressed, then open
     setTimeout(() => {
-      screen.classList.add('open');
+      screen.classList.add("open");
 
       setTimeout(() => {
-        document.body.classList.add('loading-complete');
+        document.body.classList.add("loading-complete");
       }, 1200);
 
       setTimeout(() => {
-        screen.classList.add('hidden');
+        screen.classList.add("hidden");
       }, 1600);
     }, 120);
   }
@@ -75,11 +83,11 @@ function loadHeavyAssets() {
   if (backgroundVideoEl) {
     backgroundVideoEl.preload = "auto";
     backgroundVideoEl.load();
-    backgroundVideoEl.play().catch(() => { });
+    backgroundVideoEl.play().catch(() => {});
   }
 
   // 2. Load background music
-  const bgMusic = document.getElementById('bgMusic');
+  const bgMusic = document.getElementById("bgMusic");
   if (bgMusic) {
     bgMusic.preload = "auto";
     bgMusic.load();
@@ -88,7 +96,6 @@ function loadHeavyAssets() {
   // 3. Initialize other sounds
   initSounds();
 }
-
 
 const state = {
   balance: 1000,
@@ -122,12 +129,17 @@ const profitEl = document.getElementById("profit");
 const safePicksEl = document.getElementById("safePicks");
 const gridEl = document.getElementById("grid");
 const appShellEl = document.querySelector(".app-shell");
+const centerPanelEl = document.querySelector(".center-panel");
+const controlsPanelEl = document.querySelector(".controls-panel");
+const actionButtonsEl = document.querySelector(".action-buttons");
+const quickBetRowEl = controlsPanelEl?.querySelector(".quick-bet-row") || null;
 const halfBetBtn = document.getElementById("halfBetBtn");
 const doubleBetBtn = document.getElementById("doubleBetBtn");
 const clearBetBtn = document.getElementById("clearBetBtn");
 const mineCounterEl = document.getElementById("mineCounter");
 const backgroundVideoEl = document.getElementById("backgroundVideo");
 let recentResizeBound = false;
+let actionButtonsPlacementBound = false;
 let startShimmerTimeoutIds = [];
 let startPopAllTimeoutId = null;
 let randomTileShimmerIntervalId = null;
@@ -148,13 +160,13 @@ function initSounds() {
     flip: "assets/audio/flip-tile.mp3",
     reveal: "assets/audio/snake-reveal.mp3",
     hiss: "assets/audio/snake-hiss.mp3",
-    mute: "assets/audio/mute.mp3"
+    mute: "assets/audio/mute.mp3",
   };
 
   for (const [key, src] of Object.entries(assets)) {
     sounds[key] = new Audio(src);
     sounds[key].volume = 0.6;
-    if (key === 'mute') sounds[key].volume = 0.7;
+    if (key === "mute") sounds[key].volume = 0.7;
   }
 }
 
@@ -162,17 +174,31 @@ function playSound(key) {
   const s = sounds[key];
   if (s) {
     s.currentTime = 0;
-    s.play().catch(() => { });
+    s.play().catch(() => {});
   }
 }
 
-function playClick() { playSound('click'); }
-function playGameStart() { playSound('gameStart'); }
-function playCashOut() { playSound('cashOut'); }
-function playTileFlip() { playSound('flip'); }
-function playSnakeReveal() { playSound('reveal'); }
-function playSnakeHiss() { playSound('hiss'); }
-function playMuteToggle() { playSound('mute'); }
+function playClick() {
+  playSound("click");
+}
+function playGameStart() {
+  playSound("gameStart");
+}
+function playCashOut() {
+  playSound("cashOut");
+}
+function playTileFlip() {
+  playSound("flip");
+}
+function playSnakeReveal() {
+  playSound("reveal");
+}
+function playSnakeHiss() {
+  playSound("hiss");
+}
+function playMuteToggle() {
+  playSound("mute");
+}
 
 function clampInteger(value, min, max = Number.POSITIVE_INFINITY) {
   const parsed = Number(value);
@@ -248,7 +274,9 @@ function bindStateImageButton(button, options = {}) {
   };
 
   button.dataset.pressed = "0";
-  button.addEventListener("mouseenter", () => refreshStateButtonVisual(button, { imageSelector }));
+  button.addEventListener("mouseenter", () =>
+    refreshStateButtonVisual(button, { imageSelector }),
+  );
   button.addEventListener("mouseleave", release);
   button.addEventListener("mousedown", () => {
     if (button.disabled) return;
@@ -256,7 +284,9 @@ function bindStateImageButton(button, options = {}) {
     refreshStateButtonVisual(button, { imageSelector });
   });
   button.addEventListener("mouseup", release);
-  button.addEventListener("focus", () => refreshStateButtonVisual(button, { imageSelector }));
+  button.addEventListener("focus", () =>
+    refreshStateButtonVisual(button, { imageSelector }),
+  );
   button.addEventListener("blur", release);
 
   refreshStateButtonVisual(button, { imageSelector });
@@ -379,13 +409,15 @@ function initBackgroundVideo() {
     backgroundVideoEl.loop = true;
     backgroundVideoEl.playbackRate = 1;
     backgroundVideoEl.currentTime = 0;
-    backgroundVideoEl.play().catch(() => { });
+    backgroundVideoEl.play().catch(() => {});
   };
 
   if (backgroundVideoEl.readyState >= 1) {
     startPlayback();
   } else {
-    backgroundVideoEl.addEventListener("loadedmetadata", startPlayback, { once: true });
+    backgroundVideoEl.addEventListener("loadedmetadata", startPlayback, {
+      once: true,
+    });
   }
 }
 
@@ -396,7 +428,9 @@ function clearStartShimmerSequence() {
   startShimmerTimeoutIds = [];
 
   const tiles = gridEl.querySelectorAll(".tile");
-  tiles.forEach((tile) => tile.classList.remove("tile-start-shimmer", "tile-start-bounce"));
+  tiles.forEach((tile) =>
+    tile.classList.remove("tile-start-shimmer", "tile-start-bounce"),
+  );
 }
 
 function clearRandomTileShimmerSequence() {
@@ -412,7 +446,9 @@ function clearRandomTileShimmerSequence() {
 function runRandomTileShimmerSequence() {
   if (state.active) return;
 
-  const candidates = Array.from(gridEl.querySelectorAll(".tile:not(.revealed):not(:disabled)"));
+  const candidates = Array.from(
+    gridEl.querySelectorAll(".tile:not(.revealed):not(:disabled)"),
+  );
   if (!candidates.length) return;
 
   const shuffled = [...candidates].sort(() => Math.random() - 0.5);
@@ -440,9 +476,12 @@ function runRandomTileShimmerSequence() {
     randomTileShimmerTimeoutIds.push(startTimeoutId);
   });
 
-  const cleanupTimeoutId = setTimeout(() => {
-    randomTileShimmerTimeoutIds = [];
-  }, selectedTiles.length * tileDelayMs + shimmerDurationMs + 40);
+  const cleanupTimeoutId = setTimeout(
+    () => {
+      randomTileShimmerTimeoutIds = [];
+    },
+    selectedTiles.length * tileDelayMs + shimmerDurationMs + 40,
+  );
 
   randomTileShimmerTimeoutIds.push(cleanupTimeoutId);
 }
@@ -489,9 +528,12 @@ function runStartShimmerSequence() {
       tile.classList.add("tile-start-shimmer");
       tile.classList.add("tile-start-bounce");
 
-      const stopTimeoutId = setTimeout(() => {
-        tile.classList.remove("tile-start-shimmer", "tile-start-bounce");
-      }, Math.max(shimmerDurationMs, popDurationMs) + 20);
+      const stopTimeoutId = setTimeout(
+        () => {
+          tile.classList.remove("tile-start-shimmer", "tile-start-bounce");
+        },
+        Math.max(shimmerDurationMs, popDurationMs) + 20,
+      );
 
       startShimmerTimeoutIds.push(stopTimeoutId);
     }, index * tileDelayMs);
@@ -499,42 +541,51 @@ function runStartShimmerSequence() {
     startShimmerTimeoutIds.push(startTimeoutId);
   });
 
-  const cleanupTimeoutId = setTimeout(() => {
-    startShimmerTimeoutIds = [];
-  }, tiles.length * tileDelayMs + shimmerDurationMs + 40);
+  const cleanupTimeoutId = setTimeout(
+    () => {
+      startShimmerTimeoutIds = [];
+    },
+    tiles.length * tileDelayMs + shimmerDurationMs + 40,
+  );
 
   startShimmerTimeoutIds.push(cleanupTimeoutId);
 }
 
 function init() {
-  const bgMusic = document.getElementById('bgMusic');
+  const bgMusic = document.getElementById("bgMusic");
   let wasMusicPlayingBeforeHidden = false;
   let wasVideoPlayingBeforeHidden = false;
 
   if (bgMusic) {
     bgMusic.volume = 0.35;
-    document.addEventListener('click', function startMusic() {
-      bgMusic.play().catch(() => { });
-      document.removeEventListener('click', startMusic);
-    }, { once: true });
+    document.addEventListener(
+      "click",
+      function startMusic() {
+        bgMusic.play().catch(() => {});
+        document.removeEventListener("click", startMusic);
+      },
+      { once: true },
+    );
   }
 
-  const muteBtn = document.getElementById('muteBtn');
-  muteBtn.addEventListener('click', () => {
+  const muteBtn = document.getElementById("muteBtn");
+  muteBtn.addEventListener("click", () => {
     playMuteToggle();
     if (bgMusic.muted) {
       bgMusic.muted = false;
-      muteBtn.classList.remove('muted');
+      muteBtn.classList.remove("muted");
     } else {
       bgMusic.muted = true;
-      muteBtn.classList.add('muted');
+      muteBtn.classList.add("muted");
     }
   });
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       wasMusicPlayingBeforeHidden = Boolean(bgMusic && !bgMusic.paused);
-      wasVideoPlayingBeforeHidden = Boolean(backgroundVideoEl && !backgroundVideoEl.paused);
+      wasVideoPlayingBeforeHidden = Boolean(
+        backgroundVideoEl && !backgroundVideoEl.paused,
+      );
 
       if (bgMusic) bgMusic.pause();
       if (backgroundVideoEl) backgroundVideoEl.pause();
@@ -542,21 +593,41 @@ function init() {
     }
 
     if (wasMusicPlayingBeforeHidden && bgMusic) {
-      bgMusic.play().catch(() => { });
+      bgMusic.play().catch(() => {});
     }
 
     if (wasVideoPlayingBeforeHidden && backgroundVideoEl) {
-      backgroundVideoEl.play().catch(() => { });
+      backgroundVideoEl.play().catch(() => {});
     }
   });
 
   initBackgroundVideo();
+  syncActionButtonsPlacement();
   renderGrid();
   startRandomTileShimmerLoop();
   updateUI();
   renderRecentResults();
   renderHistoryPreview();
   attachEvents();
+}
+
+function syncActionButtonsPlacement() {
+  if (!actionButtonsEl || !centerPanelEl || !controlsPanelEl) return;
+
+  if (window.innerWidth <= 869) {
+    if (actionButtonsEl.parentElement !== controlsPanelEl) {
+      if (quickBetRowEl && quickBetRowEl.parentElement === controlsPanelEl) {
+        controlsPanelEl.insertBefore(actionButtonsEl, quickBetRowEl);
+      } else {
+        controlsPanelEl.appendChild(actionButtonsEl);
+      }
+    }
+    return;
+  }
+
+  if (actionButtonsEl.parentElement !== centerPanelEl) {
+    centerPanelEl.appendChild(actionButtonsEl);
+  }
 }
 
 function attachEvents() {
@@ -578,8 +649,16 @@ function attachEvents() {
 
   bindAcceleratedValueButton(betPlusBtn, () => changeBetBy(BET_STEP));
   bindAcceleratedValueButton(betMinusBtn, () => changeBetBy(-BET_STEP));
-  bindAcceleratedValueButton(minesPlusBtn, () => changeMinesBy(MINES_STEP), playSnakeHiss);
-  bindAcceleratedValueButton(minesMinusBtn, () => changeMinesBy(-MINES_STEP), playSnakeHiss);
+  bindAcceleratedValueButton(
+    minesPlusBtn,
+    () => changeMinesBy(MINES_STEP),
+    playSnakeHiss,
+  );
+  bindAcceleratedValueButton(
+    minesMinusBtn,
+    () => changeMinesBy(-MINES_STEP),
+    playSnakeHiss,
+  );
 
   halfBetBtn?.addEventListener("click", () => {
     playClick();
@@ -604,6 +683,11 @@ function attachEvents() {
   if (!recentResizeBound) {
     recentResizeBound = true;
     window.addEventListener("resize", renderRecentResults);
+  }
+
+  if (!actionButtonsPlacementBound) {
+    actionButtonsPlacementBound = true;
+    window.addEventListener("resize", syncActionButtonsPlacement);
   }
 }
 
@@ -649,6 +733,7 @@ function updateUI() {
   syncMinesBarUI();
 
   gridEl.classList.toggle("tile-idle-tint", !state.active);
+  appShellEl?.classList.toggle("game-active", state.active);
 
   const minesPreview = Number(minesInput.value);
   const minesDisplay = state.active
@@ -712,7 +797,7 @@ function showBalanceHint() {
     width: ${arrowSize}px;
     height: auto;
     left: ${rect.right + 25}px;
-    top: ${rect.top + rect.height / 2 - (arrowSize * 0.4)}px;
+    top: ${rect.top + rect.height / 2 - arrowSize * 0.4}px;
     pointer-events: none;
     z-index: 1000;
     opacity: 0;
@@ -746,7 +831,7 @@ function showBetHint() {
     width: ${arrowSize}px;
     height: auto;
     left: ${rect.left - arrowSize - 25}px;
-    top: ${rect.top + rect.height / 2 - (arrowSize * 0.4)}px;
+    top: ${rect.top + rect.height / 2 - arrowSize * 0.4}px;
     pointer-events: none;
     z-index: 1001;
     opacity: 0;
@@ -839,7 +924,7 @@ function startGame() {
   runStartShimmerSequence();
 
   // Dismiss any lingering overlays
-  document.getElementById('vignetteOverlay')?.classList.remove('active');
+  document.getElementById("vignetteOverlay")?.classList.remove("active");
 
   setStatus("Round started. Pick a tile.");
   updateUI();
@@ -862,13 +947,13 @@ function onTileClick(index) {
   if (!state.active) {
     // Bounce the clicked tile
     const tile = getTileEl(index);
-    tile.style.transition = 'transform 0.3s cubic-bezier(.36,.07,.19,.97)';
-    tile.style.transform = 'scale(1.08)';
+    tile.style.transition = "transform 0.3s cubic-bezier(.36,.07,.19,.97)";
+    tile.style.transform = "scale(1.08)";
     setTimeout(() => {
-      tile.style.transform = 'scale(1)';
+      tile.style.transform = "scale(1)";
     }, 150);
     setTimeout(() => {
-      tile.style.transition = '';
+      tile.style.transition = "";
     }, 300);
 
     // Create arrow elements (left + right)
@@ -877,9 +962,9 @@ function onTileClick(index) {
     const arrowPadding = 24;
 
     const createHintArrow = (left, animationName) => {
-      const arrow = document.createElement('img');
-      arrow.src = 'assets/ui/hint-arrow.png';
-      arrow.className = 'hint-arrow';
+      const arrow = document.createElement("img");
+      arrow.src = "assets/ui/hint-arrow.png";
+      arrow.className = "hint-arrow";
       arrow.style.cssText = `
         position: fixed;
         width: ${arrowSize}px;
@@ -895,7 +980,7 @@ function onTileClick(index) {
       setTimeout(() => arrow.remove(), 1200);
     };
 
-    createHintArrow(btnRect.left - arrowSize - arrowPadding, 'arrow-hint-left');
+    createHintArrow(btnRect.left - arrowSize - arrowPadding, "arrow-hint-left");
 
     // Dim background + pop the START GAME button
     appShellEl?.classList.add("hint-overlay-active");
@@ -995,7 +1080,9 @@ function updateMultiplier() {
 // Add a recent result object. Keeps newest-first, max 10.
 function addRecentResult(result) {
   // ensure id + timestamp
-  const id = result.id || (Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+  const id =
+    result.id ||
+    Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   const timestamp = result.timestamp || Date.now();
 
   const r = {
@@ -1045,11 +1132,13 @@ function updateResultHoverHintPosition(hint, clientX, clientY) {
 
   let left = clientX - width / 2;
   if (left < margin) left = margin;
-  if (left + width > viewportWidth - margin) left = viewportWidth - margin - width;
+  if (left + width > viewportWidth - margin)
+    left = viewportWidth - margin - width;
 
   let top = clientY - height - offset;
   if (top < margin) top = clientY + offset;
-  if (top + height > viewportHeight - margin) top = viewportHeight - margin - height;
+  if (top + height > viewportHeight - margin)
+    top = viewportHeight - margin - height;
 
   hint.style.left = `${left}px`;
   hint.style.top = `${top}px`;
@@ -1090,10 +1179,14 @@ function renderRecentResults() {
 
   const cartWidth = 87;
   const cartGap = 12;
-  const laneWidth = container.clientWidth
-    || container.parentElement?.clientWidth
-    || window.innerWidth;
-  const visibleCount = Math.max(1, Math.floor((laneWidth + cartGap) / (cartWidth + cartGap)));
+  const laneWidth =
+    container.clientWidth ||
+    container.parentElement?.clientWidth ||
+    window.innerWidth;
+  const visibleCount = Math.max(
+    1,
+    Math.floor((laneWidth + cartGap) / (cartWidth + cartGap)),
+  );
   const visibleResults = state.recentResults.slice(0, visibleCount);
 
   const usedIds = new Set();
@@ -1107,7 +1200,9 @@ function renderRecentResults() {
 
       const img = document.createElement("img");
       img.className = "result-cart-image";
-      img.src = isLoss ? "assets/branding/loss-cart.png" : "assets/branding/win-cart.png";
+      img.src = isLoss
+        ? "assets/branding/loss-cart.png"
+        : "assets/branding/win-cart.png";
       img.alt = isLoss ? "Loss cart" : "Win cart";
       img.loading = "eager";
       card.appendChild(img);
@@ -1145,7 +1240,8 @@ function renderRecentResults() {
     node.style.transition = "none";
     node.style.transform = `translateX(${deltaX}px)`;
     requestAnimationFrame(() => {
-      node.style.transition = "transform 420ms cubic-bezier(.22,.61,.36,1), filter 0.2s cubic-bezier(.22,.61,.36,1), box-shadow 0.2s cubic-bezier(.22,.61,.36,1)";
+      node.style.transition =
+        "transform 420ms cubic-bezier(.22,.61,.36,1), filter 0.2s cubic-bezier(.22,.61,.36,1), box-shadow 0.2s cubic-bezier(.22,.61,.36,1)";
       node.style.transform = "translateX(0)";
     });
   });
@@ -1190,7 +1286,9 @@ function renderHistoryPreview() {
 
   if (!state.selectedHistoryId) return;
 
-  const item = state.recentResults.find((r) => r.id === state.selectedHistoryId);
+  const item = state.recentResults.find(
+    (r) => r.id === state.selectedHistoryId,
+  );
   if (!item) return;
 
   const popup = document.createElement("div");
@@ -1277,15 +1375,15 @@ function cashOut() {
 // ════════════════════════════════════════════════════════════
 const AnimationManager = (() => {
   const prefersReducedMotion = () =>
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ── Helpers ──
   function createParticles(cell) {
-    const container = document.createElement('div');
-    container.className = 'particle-container';
+    const container = document.createElement("div");
+    container.className = "particle-container";
     for (let i = 0; i < 6; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle';
+      const p = document.createElement("div");
+      p.className = "particle";
       container.appendChild(p);
     }
     cell.appendChild(container);
@@ -1293,20 +1391,23 @@ const AnimationManager = (() => {
   }
 
   function createConfetti(count, cssClass, containerClass) {
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     container.className = containerClass;
     for (let i = 0; i < count; i++) {
-      const piece = document.createElement('div');
+      const piece = document.createElement("div");
       piece.className = cssClass;
       piece.style.left = `${Math.random() * 100}%`;
       piece.style.animationDelay = `${Math.random() * 0.8}s`;
       piece.style.animationDuration = `${2 + Math.random() * 1.5}s`;
-      piece.style.setProperty('--confetti-rot', `${360 + Math.random() * 720}deg`);
-      piece.style.setProperty('--drift-x', `${(Math.random() - 0.5) * 60}px`);
+      piece.style.setProperty(
+        "--confetti-rot",
+        `${360 + Math.random() * 720}deg`,
+      );
+      piece.style.setProperty("--drift-x", `${(Math.random() - 0.5) * 60}px`);
       container.appendChild(piece);
     }
     document.body.appendChild(container);
-    const maxDuration = cssClass === 'red-drift-piece' ? 5000 : 4000;
+    const maxDuration = cssClass === "red-drift-piece" ? 5000 : 4000;
     setTimeout(() => container.remove(), maxDuration);
   }
 
@@ -1320,26 +1421,30 @@ const AnimationManager = (() => {
       }
 
       // Create flip container inside the tile
-      const flipContainer = document.createElement('div');
-      flipContainer.className = 'tile-flip-container';
-      const flipInner = document.createElement('div');
-      flipInner.className = 'tile-flip-inner';
+      const flipContainer = document.createElement("div");
+      flipContainer.className = "tile-flip-container";
+      const flipInner = document.createElement("div");
+      flipInner.className = "tile-flip-inner";
       flipContainer.appendChild(flipInner);
       cellElement.appendChild(flipContainer);
 
-      const flipDuration = parseFloat(getComputedStyle(document.documentElement)
-        .getPropertyValue('--anim-flip')) || 120;
+      const flipDuration =
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            "--anim-flip",
+          ),
+        ) || 120;
 
       // Phase 1: flip out
-      flipInner.classList.add('flipping-out');
+      flipInner.classList.add("flipping-out");
 
       setTimeout(() => {
         // Midpoint: swap content
         if (onMidpoint) onMidpoint();
 
         // Phase 2: flip in
-        flipInner.classList.remove('flipping-out');
-        flipInner.classList.add('flipping-in');
+        flipInner.classList.remove("flipping-out");
+        flipInner.classList.add("flipping-in");
 
         setTimeout(() => {
           flipContainer.remove();
@@ -1353,14 +1458,14 @@ const AnimationManager = (() => {
   async function revealSafe(cellElement) {
     await flipTile(cellElement, () => {
       // Apply safe visual at midpoint of flip
-      cellElement.classList.add('revealed', 'picked', 'safe');
+      cellElement.classList.add("revealed", "picked", "safe");
     });
 
     // Gem pulse
-    const logo = cellElement.querySelector('.tile-content');
+    const logo = cellElement.querySelector(".tile-content");
     if (logo) {
-      logo.classList.add('tile-icon-pulse');
-      setTimeout(() => logo.classList.remove('tile-icon-pulse'), 250);
+      logo.classList.add("tile-icon-pulse");
+      setTimeout(() => logo.classList.remove("tile-icon-pulse"), 250);
     }
 
     // Particle burst
@@ -1369,23 +1474,28 @@ const AnimationManager = (() => {
     }
 
     // Green glow
-    cellElement.classList.add('anim-safe-glow');
+    cellElement.classList.add("anim-safe-glow");
   }
 
   // ── Public: revealSnake(cellElement, allHiddenCells) ──
   async function revealSnake(cellElement, allHiddenCells) {
     // Flip the clicked mine
     await flipTile(cellElement, () => {
-      cellElement.classList.add('revealed', 'picked', 'mine');
+      cellElement.classList.add("revealed", "picked", "mine");
     });
 
     // Screen shake on the grid container
     if (!prefersReducedMotion()) {
-      const gridContainer = document.getElementById('grid');
-      gridContainer.classList.add('anim-screen-shake');
-      setTimeout(() => gridContainer.classList.remove('anim-screen-shake'),
-        parseFloat(getComputedStyle(document.documentElement)
-          .getPropertyValue('--anim-shake')) || 400);
+      const gridContainer = document.getElementById("grid");
+      gridContainer.classList.add("anim-screen-shake");
+      setTimeout(
+        () => gridContainer.classList.remove("anim-screen-shake"),
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            "--anim-shake",
+          ),
+        ) || 400,
+      );
     }
 
     // Delay 300ms then reveal all remaining hidden cells with stagger
@@ -1395,9 +1505,9 @@ const AnimationManager = (() => {
         allHiddenCells.forEach((cell, index) => {
           setTimeout(() => {
             if (prefersReducedMotion()) {
-              cell.classList.add('revealed', 'mine');
+              cell.classList.add("revealed", "mine");
             } else {
-              cell.classList.add('revealed', 'mine', 'anim-stagger-reveal');
+              cell.classList.add("revealed", "mine", "anim-stagger-reveal");
             }
             cell.disabled = true;
           }, index * staggerDelay);
@@ -1409,10 +1519,10 @@ const AnimationManager = (() => {
     });
 
     // Red vignette
-    const vignette = document.getElementById('vignetteOverlay');
+    const vignette = document.getElementById("vignetteOverlay");
     if (vignette) {
-      vignette.classList.add('active');
-      setTimeout(() => vignette.classList.remove('active'), 2000);
+      vignette.classList.add("active");
+      setTimeout(() => vignette.classList.remove("active"), 2000);
     }
   }
 
@@ -1420,7 +1530,7 @@ const AnimationManager = (() => {
   function showWinOverlay(amount, multiplier) {
     // Confetti only — no overlay modal
     if (!prefersReducedMotion()) {
-      createConfetti(40, 'confetti-piece', 'confetti-container');
+      createConfetti(40, "confetti-piece", "confetti-container");
     }
   }
 
@@ -1428,27 +1538,32 @@ const AnimationManager = (() => {
   function showLossOverlay(amount) {
     // Red particle drift only — no overlay modal
     if (!prefersReducedMotion()) {
-      createConfetti(15, 'red-drift-piece', 'red-drift-container');
+      createConfetti(15, "red-drift-piece", "red-drift-container");
     }
   }
 
   // ── Public: updateMultiplier(oldValue, newValue) ──
   function updateMultiplierDisplay(oldValue, newValue) {
-    const el = document.getElementById('multiplier');
+    const el = document.getElementById("multiplier");
     if (!el) return;
 
     // Remove old color classes
-    el.classList.remove('multiplier-green', 'multiplier-yellow', 'multiplier-orange', 'multiplier-red');
+    el.classList.remove(
+      "multiplier-green",
+      "multiplier-yellow",
+      "multiplier-orange",
+      "multiplier-red",
+    );
 
     // Set color based on new value
     if (newValue >= 10) {
-      el.classList.add('multiplier-red');
+      el.classList.add("multiplier-red");
     } else if (newValue >= 5) {
-      el.classList.add('multiplier-orange');
+      el.classList.add("multiplier-orange");
     } else if (newValue >= 2) {
-      el.classList.add('multiplier-yellow');
+      el.classList.add("multiplier-yellow");
     } else {
-      el.classList.add('multiplier-green');
+      el.classList.add("multiplier-green");
     }
 
     // Count-up animation using rAF
@@ -1473,7 +1588,10 @@ const AnimationManager = (() => {
       } else {
         el.textContent = `${newValue.toFixed(2)}x`;
         // Guard optional SFX integration to avoid runtime crashes when absent.
-        if (typeof globalThis.SFX !== "undefined" && typeof globalThis.SFX.multiplierTick === "function") {
+        if (
+          typeof globalThis.SFX !== "undefined" &&
+          typeof globalThis.SFX.multiplierTick === "function"
+        ) {
           globalThis.SFX.multiplierTick();
         }
       }
@@ -1484,9 +1602,14 @@ const AnimationManager = (() => {
 
   // ── Public: resetMultiplierStyle() ──
   function resetMultiplierStyle() {
-    const el = document.getElementById('multiplier');
+    const el = document.getElementById("multiplier");
     if (!el) return;
-    el.classList.remove('multiplier-green', 'multiplier-yellow', 'multiplier-orange', 'multiplier-red');
+    el.classList.remove(
+      "multiplier-green",
+      "multiplier-yellow",
+      "multiplier-orange",
+      "multiplier-red",
+    );
   }
 
   return {
@@ -1498,6 +1621,5 @@ const AnimationManager = (() => {
     resetMultiplierStyle,
   };
 })();
-
 
 init();

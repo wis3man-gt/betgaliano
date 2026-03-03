@@ -44,10 +44,16 @@
 
       <section class="panel center-panel">
 
-        <div class="board-logo-overlay" aria-hidden="true">
-          <div class="board-logo-sweep">
-            <img class="board-logo-image" src="assets/branding/logo.png" alt="" />
+        <div class="top-ui-row">
+          <div class="board-logo-overlay" aria-hidden="true">
+            <div class="board-logo-sweep">
+              <img class="board-logo-image" src="assets/branding/logo.png" alt="" />
+            </div>
           </div>
+
+          <button id="muteBtn" class="mute-btn" aria-label="Toggle sound">
+            <img id="muteBtnImg" src="assets/ui/sound-on-default.png" alt="Sound on" />
+          </button>
         </div>
 
         <div class="card board-card">
@@ -186,10 +192,6 @@
   <audio id="bgMusic" loop preload="none">
     <source src="assets/audio/bg-music.mp3" type="audio/mpeg">
   </audio>
-
-  <button id="muteBtn" class="mute-btn" aria-label="Toggle sound">
-    <img id="muteBtnImg" src="assets/ui/sound-on-default.png" alt="Sound on" />
-  </button>
 
   <script src="app.js"></script>
 </body>
